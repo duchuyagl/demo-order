@@ -6,7 +6,9 @@ import QuoteManagement from './components/QuoteManagement';
 import OrderManagement from './components/OrderManagement';
 import SalesManagement from './components/SalesManagement';
 import BillingManagement from './components/BillingManagement';
-import MasterManagement from './components/MasterManagement';
+import CustomerMaster from './components/CustomerMaster';
+import ProductMaster from './components/ProductMaster';
+import UserManagement from './components/UserManagement';
 import { Menu } from 'lucide-react';
 
 function App() {
@@ -38,8 +40,12 @@ function App() {
         return <SalesManagement />;
       case 'billing':
         return <BillingManagement />;
-      case 'master':
-        return <MasterManagement />;
+      case 'customers':
+        return <CustomerMaster />;
+      case 'products':
+        return <ProductMaster />;
+      case 'users':
+        return <UserManagement />;
       default:
         return <Dashboard />;
     }

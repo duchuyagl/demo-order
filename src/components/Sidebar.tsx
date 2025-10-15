@@ -23,7 +23,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange, onLogout }
     { id: 'orders', label: '受注管理', icon: Package },
     { id: 'sales', label: '売上管理', icon: BarChart3 },
     { id: 'billing', label: '請求管理', icon: Receipt },
-    { id: 'master', label: 'マスタ管理', icon: Settings },
+    { id: 'customers', label: '顧客マスタ', icon: Settings },
+    { id: 'products', label: '商品マスタ', icon: DollarSign },
+    { id: 'users', label: 'ユーザー管理', icon: Settings },
   ];
 
   return (
