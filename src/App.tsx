@@ -9,6 +9,12 @@ import BillingManagement from './components/BillingManagement';
 import CustomerMaster from './components/CustomerMaster';
 import ProductMaster from './components/ProductMaster';
 import UserManagement from './components/UserManagement';
+import DepartmentMaster from './components/DepartmentMaster';
+import SupplierMaster from './components/SupplierMaster';
+import RoleMaster from './components/RoleMaster';
+import PermissionMaster from './components/PermissionMaster';
+import CostMaster from './components/CostMaster';
+import BillingDestinationMaster from './components/BillingDestinationMaster';
 import { Menu } from 'lucide-react';
 
 function App() {
@@ -46,6 +52,18 @@ function App() {
         return <ProductMaster />;
       case 'users':
         return <UserManagement />;
+      case 'departments':
+        return <DepartmentMaster />;
+      case 'suppliers':
+        return <SupplierMaster />;
+      case 'roles':
+        return <RoleMaster />;
+      case 'permissions':
+        return <PermissionMaster />;
+      case 'costs':
+        return <CostMaster />;
+      case 'billing-destinations':
+        return <BillingDestinationMaster />;
       default:
         return <Dashboard />;
     }
