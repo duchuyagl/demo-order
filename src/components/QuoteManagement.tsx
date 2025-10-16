@@ -1,45 +1,103 @@
 import React, { useState } from 'react';
-import { Plus, Search, Edit, Eye, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, Eye, Trash2, X } from 'lucide-react';
+
+interface QuoteItem {
+  itemName: string;
+  description: string;
+  quantity: number;
+  unit: string;
+  unitPrice: number;
+  amount: number;
+}
+
+interface QuoteFormData {
+  quoteNo: string;
+  issueDate: string;
+  subject: string;
+  customerId: string;
+  customerName: string;
+  customerContactName: string;
+  validUntil: string;
+  assignedStaff: string;
+  paymentMethod: string;
+  deliveryDate: string;
+  deliveryMethod: string;
+  items: QuoteItem[];
+  subtotal: number;
+  taxAmount: number;
+  discountAmount: number;
+  totalAmount: number;
+  notes: string;
+}
 
 const QuoteManagement: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({
-    customer: '',
-    title: '',
+  const [formData, setFormData] = useState<QuoteFormData>({
+    quoteNo: '',
+    issueDate: new Date().toISOString().split('T')[0],
+    subject: '',
+    customerId: '',
+    customerName: '',
+    customerContactName: '',
     validUntil: '',
+    assignedStaff: '',
     paymentMethod: '',
-    notes: '',
-    items: [{ product: '', quantity: 1, unitPrice: 0, amount: 0 }]
+    deliveryDate: '',
+    deliveryMethod: '',
+    items: [{ itemName: '', description: '', quantity: 1, unit: '式', unitPrice: 0, amount: 0 }],
+    subtotal: 0,
+    taxAmount: 0,
+    discountAmount: 0,
+    totalAmount: 0,
+    notes: ''
   });
 
   const quotes = [
-    { 
-      id: 'QT-001', 
-      customer: '株式会社サンプル', 
+    {
+      id: 'QT-2025-001',
+      customer: '株式会社サンプル',
+      contact: '田中太郎',
       title: 'Webサイト制作',
-      amount: '¥450,000', 
-      status: '送付済み', 
+      amount: 495000,
+      status: '送付済み',
       date: '2025-01-15',
-      validUntil: '2025-02-15'
+      validUntil: '2025-02-15',
+      assignedStaff: '山田一郎'
     },
-    { 
-      id: 'QT-002', 
-      customer: '有限会社テスト', 
+    {
+      id: 'QT-2025-002',
+      customer: '有限会社テスト',
+      contact: '佐藤花子',
       title: 'システム開発',
-      amount: '¥280,000', 
-      status: '承認済み', 
+      amount: 308000,
+      status: '承認済み',
       date: '2025-01-14',
-      validUntil: '2025-02-14'
+      validUntil: '2025-02-14',
+      assignedStaff: '佐藤二郎'
     },
-    { 
-      id: 'QT-003', 
-      customer: '合同会社デモ', 
+    {
+      id: 'QT-2025-003',
+      customer: '合同会社デモ',
+      contact: '山田次郎',
       title: 'コンサルティング',
-      amount: '¥820,000', 
-      status: '作成中', 
+      amount: 902000,
+      status: '作成中',
       date: '2025-01-13',
-      validUntil: '2025-02-13'
+      validUntil: '2025-02-13',
+      assignedStaff: '山田一郎'
     },
+  ];
+
+  const customers = [
+    { id: '1', name: '株式会社サンプル', contact: '田中太郎' },
+    { id: '2', name: '有限会社テスト', contact: '佐藤花子' },
+    { id: '3', name: '合同会社デモ', contact: '山田次郎' },
+  ];
+
+  const staffMembers = [
+    { id: '1', name: '山田一郎' },
+    { id: '2', name: '佐藤二郎' },
+    { id: '3', name: '鈴木三郎' },
   ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -50,67 +108,102 @@ const QuoteManagement: React.FC = () => {
     }));
   };
 
-  const handleItemChange = (index: number, field: string, value: string | number) => {
+  const handleCustomerChange = (customerId: string) => {
+    const customer = customers.find(c => c.id === customerId);
+    setFormData(prev => ({
+      ...prev,
+      customerId,
+      customerName: customer?.name || '',
+      customerContactName: customer?.contact || ''
+    }));
+  };
+
+  const handleItemChange = (index: number, field: keyof QuoteItem, value: string | number) => {
     const updatedItems = [...formData.items];
     updatedItems[index] = {
       ...updatedItems[index],
       [field]: value
     };
-    
-    // 数量と単価が入力されている場合、金額を自動計算
+
     if (field === 'quantity' || field === 'unitPrice') {
       const quantity = field === 'quantity' ? Number(value) : updatedItems[index].quantity;
       const unitPrice = field === 'unitPrice' ? Number(value) : updatedItems[index].unitPrice;
       updatedItems[index].amount = quantity * unitPrice;
     }
-    
-    setFormData(prev => ({
-      ...prev,
-      items: updatedItems
-    }));
+
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        items: updatedItems
+      };
+      return calculateTotals(newData);
+    });
+  };
+
+  const calculateTotals = (data: QuoteFormData): QuoteFormData => {
+    const subtotal = data.items.reduce((total, item) => total + item.amount, 0);
+    const taxAmount = Math.floor(subtotal * 0.1);
+    const totalAmount = subtotal + taxAmount - data.discountAmount;
+
+    return {
+      ...data,
+      subtotal,
+      taxAmount,
+      totalAmount
+    };
+  };
+
+  const handleDiscountChange = (discount: number) => {
+    setFormData(prev => calculateTotals({ ...prev, discountAmount: discount }));
   };
 
   const addItem = () => {
     setFormData(prev => ({
       ...prev,
-      items: [...prev.items, { product: '', quantity: 1, unitPrice: 0, amount: 0 }]
+      items: [...prev.items, { itemName: '', description: '', quantity: 1, unit: '式', unitPrice: 0, amount: 0 }]
     }));
   };
 
   const removeItem = (index: number) => {
     if (formData.items.length > 1) {
       const updatedItems = formData.items.filter((_, i) => i !== index);
-      setFormData(prev => ({
+      setFormData(prev => calculateTotals({
         ...prev,
         items: updatedItems
       }));
     }
   };
 
-  const getTotalAmount = () => {
-    return formData.items.reduce((total, item) => total + item.amount, 0);
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // ここで実際の見積作成処理を行う
     console.log('新規見積データ:', formData);
-    
-    // フォームをリセット
+
     setFormData({
-      customer: '',
-      title: '',
+      quoteNo: '',
+      issueDate: new Date().toISOString().split('T')[0],
+      subject: '',
+      customerId: '',
+      customerName: '',
+      customerContactName: '',
       validUntil: '',
+      assignedStaff: '',
       paymentMethod: '',
-      notes: '',
-      items: [{ product: '', quantity: 1, unitPrice: 0, amount: 0 }]
+      deliveryDate: '',
+      deliveryMethod: '',
+      items: [{ itemName: '', description: '', quantity: 1, unit: '式', unitPrice: 0, amount: 0 }],
+      subtotal: 0,
+      taxAmount: 0,
+      discountAmount: 0,
+      totalAmount: 0,
+      notes: ''
     });
-    
-    // モーダルを閉じる
+
     setShowModal(false);
-    
-    // 成功メッセージを表示（実際のシステムでは適切な通知システムを使用）
     alert('見積を作成しました');
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
   };
 
   return (
@@ -163,25 +256,28 @@ const QuoteManagement: React.FC = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  見積番号
+                  見積No
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  顧客名
+                  発行日
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   件名
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  金額
+                  顧客名
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ステータス
+                  担当者
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  作成日
+                  見積金額
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   有効期限
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ステータス
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   操作
@@ -195,13 +291,22 @@ const QuoteManagement: React.FC = () => {
                     {quote.id}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {quote.customer}
+                    {quote.date}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {quote.title}
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {quote.customer}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {quote.assignedStaff}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                    {quote.amount}
+                    ¥{quote.amount.toLocaleString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {quote.validUntil}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -212,12 +317,6 @@ const QuoteManagement: React.FC = () => {
                     }`}>
                       {quote.status}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {quote.date}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {quote.validUntil}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex space-x-2">
@@ -241,141 +340,272 @@ const QuoteManagement: React.FC = () => {
 
       {/* 新規見積作成モーダル */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 w-full max-w-4xl max-h-screen overflow-y-auto">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">新規見積作成</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    顧客選択
-                  </label>
-                  <select 
-                    name="customer"
-                    value={formData.customer}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#051C2C]"
-                  >
-                    <option value="">顧客を選択</option>
-                    <option value="1">株式会社サンプル</option>
-                    <option value="2">有限会社テスト</option>
-                    <option value="3">合同会社デモ</option>
-                  </select>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+          <div className="bg-white rounded-lg p-8 w-full max-w-6xl my-8 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">新規見積作成</h2>
+              <button
+                onClick={handleCloseModal}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">基本情報</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      見積No <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="quoteNo"
+                      value={formData.quoteNo}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="QT-2025-001"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#051C2C]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      発行日 <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      name="issueDate"
+                      value={formData.issueDate}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#051C2C]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      有効期限 <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      name="validUntil"
+                      value={formData.validUntil}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#051C2C]"
+                    />
+                  </div>
                 </div>
-                <div>
+                <div className="mt-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    有効期限
+                    件名 <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="date"
-                    name="validUntil"
-                    value={formData.validUntil}
+                    type="text"
+                    name="subject"
+                    value={formData.subject}
                     onChange={handleInputChange}
                     required
+                    placeholder="見積件名を入力"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#051C2C]"
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  件名
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#051C2C]"
-                  placeholder="見積件名を入力"
-                />
+
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">顧客情報</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      顧客名 <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="customerId"
+                      value={formData.customerId}
+                      onChange={(e) => handleCustomerChange(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#051C2C]"
+                    >
+                      <option value="">顧客を選択</option>
+                      {customers.map(customer => (
+                        <option key={customer.id} value={customer.id}>{customer.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      顧客担当者名
+                    </label>
+                    <input
+                      type="text"
+                      name="customerContactName"
+                      value={formData.customerContactName}
+                      onChange={handleInputChange}
+                      readOnly
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      担当者名 <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="assignedStaff"
+                      value={formData.assignedStaff}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#051C2C]"
+                    >
+                      <option value="">担当者を選択</option>
+                      {staffMembers.map(staff => (
+                        <option key={staff.id} value={staff.name}>{staff.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">取引条件</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      お支払方法 <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="paymentMethod"
+                      value={formData.paymentMethod}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#051C2C]"
+                    >
+                      <option value="">選択してください</option>
+                      <option value="銀行振込">銀行振込</option>
+                      <option value="現金">現金</option>
+                      <option value="クレジットカード">クレジットカード</option>
+                      <option value="小切手">小切手</option>
+                      <option value="分割払い">分割払い</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      納期
+                    </label>
+                    <input
+                      type="date"
+                      name="deliveryDate"
+                      value={formData.deliveryDate}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#051C2C]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      納品方法
+                    </label>
+                    <input
+                      type="text"
+                      name="deliveryMethod"
+                      value={formData.deliveryMethod}
+                      onChange={handleInputChange}
+                      placeholder="例: 電子納品、郵送など"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#051C2C]"
+                    />
+                  </div>
+                </div>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  お支払方法
-                </label>
-                <select
-                  name="paymentMethod"
-                  value={formData.paymentMethod}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#051C2C]"
-                >
-                  <option value="">お支払方法を選択</option>
-                  <option value="bank_transfer">銀行振込</option>
-                  <option value="cash">現金</option>
-                  <option value="credit_card">クレジットカード</option>
-                  <option value="check">小切手</option>
-                  <option value="installment">分割払い</option>
-                </select>
-              </div>
-              
-              {/* 見積明細 */}
-              <div>
+              <div className="bg-gray-50 p-4 rounded-lg">
                 <div className="flex justify-between items-center mb-4">
-                  <label className="block text-sm font-medium text-gray-700">
-                    見積明細
-                  </label>
+                  <h3 className="text-lg font-semibold text-gray-800">見積明細</h3>
                   <button
                     type="button"
                     onClick={addItem}
-                    className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors flex items-center space-x-1"
+                    className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors flex items-center space-x-1"
                   >
                     <Plus className="w-4 h-4" />
                     <span>明細追加</span>
                   </button>
                 </div>
-                
-                <div className="border border-gray-300 rounded-lg overflow-hidden">
+
+                <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
                   <table className="w-full">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-gray-100">
                       <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">商品・サービス</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">数量</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">単価</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">金額</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">No.</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">項目名</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">内容詳細</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">数量</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">単位</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">単価</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">金額</th>
+                        <th className="px-3 py-2 text-center text-xs font-medium text-gray-600">操作</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {formData.items.map((item, index) => (
                         <tr key={index}>
-                          <td className="px-4 py-2">
+                          <td className="px-3 py-2 text-sm text-gray-600">{index + 1}</td>
+                          <td className="px-3 py-2">
                             <input
                               type="text"
-                              value={item.product}
-                              onChange={(e) => handleItemChange(index, 'product', e.target.value)}
+                              value={item.itemName}
+                              onChange={(e) => handleItemChange(index, 'itemName', e.target.value)}
                               className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-[#051C2C]"
-                              placeholder="商品名を入力"
+                              placeholder="項目名"
                               required
                             />
                           </td>
-                          <td className="px-4 py-2">
+                          <td className="px-3 py-2">
+                            <input
+                              type="text"
+                              value={item.description}
+                              onChange={(e) => handleItemChange(index, 'description', e.target.value)}
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-[#051C2C]"
+                              placeholder="詳細説明"
+                            />
+                          </td>
+                          <td className="px-3 py-2">
                             <input
                               type="number"
                               value={item.quantity}
                               onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value))}
-                              className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-[#051C2C]"
+                              className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-[#051C2C]"
                               min="1"
                               required
                             />
                           </td>
-                          <td className="px-4 py-2">
+                          <td className="px-3 py-2">
+                            <select
+                              value={item.unit}
+                              onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
+                              className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-[#051C2C]"
+                            >
+                              <option value="式">式</option>
+                              <option value="個">個</option>
+                              <option value="台">台</option>
+                              <option value="本">本</option>
+                              <option value="枚">枚</option>
+                              <option value="時間">時間</option>
+                              <option value="日">日</option>
+                              <option value="ヶ月">ヶ月</option>
+                              <option value="年">年</option>
+                            </select>
+                          </td>
+                          <td className="px-3 py-2">
                             <input
                               type="number"
                               value={item.unitPrice}
                               onChange={(e) => handleItemChange(index, 'unitPrice', Number(e.target.value))}
-                              className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-[#051C2C]"
+                              className="w-28 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-[#051C2C]"
                               min="0"
                               required
                             />
                           </td>
-                          <td className="px-4 py-2">
-                            <span className="text-sm font-medium">¥{item.amount.toLocaleString()}</span>
+                          <td className="px-3 py-2 text-sm font-medium text-right">
+                            ¥{item.amount.toLocaleString()}
                           </td>
-                          <td className="px-4 py-2">
+                          <td className="px-3 py-2 text-center">
                             <button
                               type="button"
                               onClick={() => removeItem(index)}
@@ -388,45 +618,62 @@ const QuoteManagement: React.FC = () => {
                         </tr>
                       ))}
                     </tbody>
-                    <tfoot className="bg-gray-50">
-                      <tr>
-                        <td colSpan={3} className="px-4 py-2 text-right font-medium text-gray-700">
-                          合計金額:
-                        </td>
-                        <td className="px-4 py-2 font-bold text-lg text-gray-900">
-                          ¥{getTotalAmount().toLocaleString()}
-                        </td>
-                        <td className="px-4 py-2"></td>
-                      </tr>
-                    </tfoot>
                   </table>
+                </div>
+
+                <div className="mt-4 bg-white border border-gray-300 rounded-lg p-4">
+                  <h4 className="text-md font-semibold text-gray-800 mb-3">合計欄</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-700">小計</span>
+                      <span className="text-sm font-medium">¥{formData.subtotal.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-700">消費税 (10%)</span>
+                      <span className="text-sm font-medium">¥{formData.taxAmount.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-700">値引き・割引額</span>
+                      <input
+                        type="number"
+                        value={formData.discountAmount}
+                        onChange={(e) => handleDiscountChange(Number(e.target.value))}
+                        className="w-32 px-2 py-1 border border-gray-300 rounded text-sm text-right focus:ring-1 focus:ring-[#051C2C]"
+                        min="0"
+                      />
+                    </div>
+                    <div className="border-t border-gray-300 pt-2 flex justify-between items-center">
+                      <span className="text-lg font-bold text-gray-800">合計金額（税込）</span>
+                      <span className="text-xl font-bold text-[#051C2C]">¥{formData.totalAmount.toLocaleString()}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  備考
-                </label>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">備考</h3>
                 <textarea
                   name="notes"
                   value={formData.notes}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#051C2C] h-24"
-                  placeholder="備考を入力"
+                  placeholder="その他特記事項があれば入力してください"
                 ></textarea>
               </div>
+
+              <div className="flex justify-end space-x-4 pt-4 border-t border-gray-300">
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                >
+                  キャンセル
+                </button>
+                <button type="submit" className="px-6 py-2 bg-[#051C2C] text-white rounded-lg hover:bg-[#0a2a3f]">
+                  見積作成
+                </button>
+              </div>
             </form>
-            <div className="flex justify-end space-x-4 mt-8">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-              >
-                キャンセル
-              </button>
-              <button type="submit" className="px-6 py-2 bg-[#051C2C] text-white rounded-lg hover:bg-[#0a2a3f]">
-                作成
-              </button>
-            </div>
           </div>
         </div>
       )}
