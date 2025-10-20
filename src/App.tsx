@@ -6,15 +6,19 @@ import QuoteManagement from './components/QuoteManagement';
 import OrderManagement from './components/OrderManagement';
 import SalesManagement from './components/SalesManagement';
 import BillingManagement from './components/BillingManagement';
-import CustomerMaster from './components/CustomerMaster';
-import ProductMaster from './components/ProductMaster';
-import UserManagement from './components/UserManagement';
-import DepartmentMaster from './components/DepartmentMaster';
-import SupplierMaster from './components/SupplierMaster';
+import AccountMaster from './components/AccountMaster';
 import RoleMaster from './components/RoleMaster';
 import PermissionMaster from './components/PermissionMaster';
-import CostMaster from './components/CostMaster';
+import EmployeeMaster from './components/EmployeeMaster';
+import DepartmentMaster from './components/DepartmentMaster';
+import ExternalUserMaster from './components/ExternalUserMaster';
+import CustomerMaster from './components/CustomerMaster';
 import BillingDestinationMaster from './components/BillingDestinationMaster';
+import ProductMaster from './components/ProductMaster';
+import TaskMaster from './components/TaskMaster';
+import OutsourcingMaster from './components/OutsourcingMaster';
+import SupplierMaster from './components/SupplierMaster';
+import CostMaster from './components/CostMaster';
 import { Menu } from 'lucide-react';
 
 function App() {
@@ -46,24 +50,32 @@ function App() {
         return <SalesManagement />;
       case 'billing':
         return <BillingManagement />;
-      case 'customers':
-        return <CustomerMaster />;
-      case 'products':
-        return <ProductMaster />;
-      case 'users':
-        return <UserManagement />;
-      case 'departments':
-        return <DepartmentMaster />;
-      case 'suppliers':
-        return <SupplierMaster />;
+      case 'accounts':
+        return <AccountMaster />;
       case 'roles':
         return <RoleMaster />;
       case 'permissions':
         return <PermissionMaster />;
-      case 'costs':
-        return <CostMaster />;
+      case 'employees':
+        return <EmployeeMaster />;
+      case 'departments':
+        return <DepartmentMaster />;
+      case 'external-users':
+        return <ExternalUserMaster />;
+      case 'customers':
+        return <CustomerMaster />;
       case 'billing-destinations':
         return <BillingDestinationMaster />;
+      case 'products':
+        return <ProductMaster />;
+      case 'tasks':
+        return <TaskMaster />;
+      case 'outsourcing':
+        return <OutsourcingMaster />;
+      case 'suppliers':
+        return <SupplierMaster />;
+      case 'costs':
+        return <CostMaster />;
       default:
         return <Dashboard />;
     }

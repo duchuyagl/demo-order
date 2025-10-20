@@ -29,15 +29,19 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange, onLogout }
   ];
 
   const masterMenuItems = [
-    { id: 'customers', label: '顧客マスタ' },
-    { id: 'products', label: '商品マスタ' },
-    { id: 'users', label: 'ユーザー管理' },
-    { id: 'departments', label: '部署マスタ' },
-    { id: 'suppliers', label: '仕入先マスタ' },
+    { id: 'accounts', label: 'アカウントマスタ' },
     { id: 'roles', label: 'ロールマスタ' },
     { id: 'permissions', label: '権限マスタ' },
-    { id: 'costs', label: '原価マスタ' },
+    { id: 'employees', label: '社員マスタ' },
+    { id: 'departments', label: '部署マスタ' },
+    { id: 'external-users', label: '外部ユーザーマスタ' },
+    { id: 'customers', label: '顧客マスタ' },
     { id: 'billing-destinations', label: '請求先マスタ' },
+    { id: 'products', label: '商品マスタ' },
+    { id: 'tasks', label: '作業マスタ' },
+    { id: 'outsourcing', label: '外注マスタ' },
+    { id: 'suppliers', label: '仕入先マスタ' },
+    { id: 'costs', label: '原価マスタ' },
   ];
 
   return (
