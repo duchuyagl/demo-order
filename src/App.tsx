@@ -39,7 +39,21 @@ function App() {
       case 'billing':
         return <BillingManagement />;
       case 'master':
-        return <MasterManagement />;
+      case 'master-account':
+      case 'master-staff':
+      case 'master-department':
+      case 'master-role':
+      case 'master-permission':
+      case 'master-screen':
+      case 'master-customer':
+      case 'master-billing':
+      case 'master-shipping':
+      case 'master-product':
+      case 'master-unit':
+      case 'master-price':
+      case 'master-supplier':
+      case 'master-cost':
+        return <MasterManagement currentMaster={currentPage} />;
       default:
         return <Dashboard />;
     }
