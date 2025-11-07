@@ -6,7 +6,18 @@ import QuoteManagement from './components/QuoteManagement';
 import OrderManagement from './components/OrderManagement';
 import SalesManagement from './components/SalesManagement';
 import BillingManagement from './components/BillingManagement';
-import MasterManagement from './components/MasterManagement';
+import AccountMaster from './components/AccountMaster';
+import EmployeeMaster from './components/EmployeeMaster';
+import RoleMaster from './components/RoleMaster';
+import PermissionMaster from './components/PermissionMaster';
+import CustomerMasterNew from './components/CustomerMasterNew';
+import ProductMasterNew from './components/ProductMasterNew';
+import TaskMaster from './components/TaskMaster';
+import OutsourcingMaster from './components/OutsourcingMaster';
+import SupplierMasterNew from './components/SupplierMasterNew';
+import CostMaster from './components/CostMaster';
+import DepartmentMaster from './components/DepartmentMaster';
+import ExternalUserMaster from './components/ExternalUserMaster';
 import { Menu } from 'lucide-react';
 
 function App() {
@@ -38,22 +49,30 @@ function App() {
         return <SalesManagement />;
       case 'billing':
         return <BillingManagement />;
-      case 'master':
       case 'master-account':
-      case 'master-staff':
+        return <AccountMaster />;
+      case 'master-employee':
+        return <EmployeeMaster />;
       case 'master-department':
+        return <DepartmentMaster />;
+      case 'master-external-user':
+        return <ExternalUserMaster />;
       case 'master-role':
+        return <RoleMaster />;
       case 'master-permission':
-      case 'master-screen':
+        return <PermissionMaster />;
       case 'master-customer':
-      case 'master-billing':
-      case 'master-shipping':
+        return <CustomerMasterNew />;
       case 'master-product':
-      case 'master-unit':
-      case 'master-price':
+        return <ProductMasterNew />;
+      case 'master-task':
+        return <TaskMaster />;
+      case 'master-outsourcing':
+        return <OutsourcingMaster />;
       case 'master-supplier':
+        return <SupplierMasterNew />;
       case 'master-cost':
-        return <MasterManagement currentMaster={currentPage} />;
+        return <CostMaster />;
       default:
         return <Dashboard />;
     }

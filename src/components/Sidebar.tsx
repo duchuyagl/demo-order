@@ -45,17 +45,18 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange, onLogout }
       icon: Settings,
       subItems: [
         { id: 'master-account', label: 'アカウントマスタ' },
-        { id: 'master-staff', label: 'スタッフマスタ' },
+        { id: 'master-employee', label: '社員マスタ' },
         { id: 'master-department', label: '部署マスタ' },
+        { id: 'master-external-user', label: '外部ユーザーマスタ' },
         { id: 'master-role', label: 'ロールマスタ' },
         { id: 'master-permission', label: '権限マスタ' },
-        { id: 'master-screen', label: '画面マスタ' },
         { id: 'master-customer', label: '顧客マスタ' },
-        { id: 'master-billing', label: '請求先マスタ' },
-        { id: 'master-shipping', label: '配送先マスタ' },
         { id: 'master-product', label: '商品マスタ' },
+        { id: 'master-task', label: '作業マスタ' },
+        { id: 'master-outsourcing', label: '外注マスタ' },
         { id: 'master-supplier', label: '仕入先マスタ' },
         { id: 'master-cost', label: '原価マスタ' },
+        { id: 'master-line-template', label: '定型文マスタ' },
       ]
     },
   ];
